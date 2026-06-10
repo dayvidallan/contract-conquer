@@ -102,12 +102,12 @@ function Index() {
 function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/60">
-      <div className="mx-auto max-w-7xl px-6 h-16 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2 font-bold text-primary">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--gradient-brand)] text-brand-foreground">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+        <a href="#" className="flex items-center gap-2 font-bold text-primary min-w-0">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--gradient-brand)] text-brand-foreground">
             <Radar className="h-4 w-4" />
           </span>
-          <span className="tracking-tight">Licitação App</span>
+          <span className="tracking-tight truncate">Licitação App</span>
         </a>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <a href="#solucao" className="hover:text-foreground transition-colors">Solução</a>
@@ -115,13 +115,13 @@ function Nav() {
           <a href="#planos" className="hover:text-foreground transition-colors">Planos</a>
           <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <a href="#planos" className="hidden sm:inline text-sm font-medium text-foreground/80 hover:text-foreground">Entrar</a>
           <a
             href="#planos"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm whitespace-nowrap"
           >
-            Testar agora <ArrowRight className="h-3.5 w-3.5" />
+            Testar <ArrowRight className="h-3.5 w-3.5" />
           </a>
         </div>
       </div>
@@ -139,40 +139,40 @@ function Hero() {
         aria-hidden
       />
       <div className="absolute inset-x-0 top-0 -z-10 h-[600px] bg-[radial-gradient(circle_at_50%_-10%,oklch(0.55_0.21_263/0.15),transparent_60%)]" aria-hidden />
-      <div className="mx-auto max-w-7xl px-6 pt-20 pb-24 lg:pt-28 lg:pb-32">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-14 pb-16 sm:pt-20 sm:pb-24 lg:pt-28 lg:pb-32">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className="animate-float-up">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-brand" />
-              Baseado em mais de 20 anos de experiência em licitações públicas
+            <div className="inline-flex items-start sm:items-center gap-2 rounded-2xl sm:rounded-full border border-border bg-background/80 backdrop-blur px-3 py-1.5 text-[11px] sm:text-xs font-medium text-muted-foreground max-w-full">
+              <Sparkles className="h-3.5 w-3.5 text-brand shrink-0 mt-0.5 sm:mt-0" />
+              <span>Baseado em mais de 20 anos de experiência em licitações públicas</span>
             </div>
-            <h1 className="mt-6 text-5xl md:text-6xl lg:text-7xl font-extrabold text-primary leading-[1.05]">
+            <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-primary leading-[1.05]">
               Pare de perder
               <br />
               <span className="bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">
                 licitações no escuro.
               </span>
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+            <p className="mt-5 text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
               O Licitação App encontra oportunidades compatíveis com sua empresa, analisa a
               concorrência, mostra suas chances reais e ajuda você a vender para o governo com
               mais segurança.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-col sm:flex-row flex-wrap gap-3">
               <a
                 href="#planos"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-[var(--shadow-elegant)]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-[var(--shadow-elegant)]"
               >
                 TESTAR AGORA <ArrowRight className="h-4 w-4" />
               </a>
               <a
                 href="#dashboard"
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-6 py-3.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-6 py-3.5 text-sm font-semibold text-foreground hover:bg-secondary transition"
               >
                 Ver demonstração
               </a>
             </div>
-            <div className="mt-10 flex items-center gap-6 text-xs text-muted-foreground">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-success" />
                 Cancelamento a qualquer momento
@@ -201,13 +201,13 @@ function HeroDashboard() {
           <span className="h-2.5 w-2.5 rounded-full bg-destructive/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-          <span className="ml-3 text-xs text-muted-foreground">app.licitacaoapp.com.br/oportunidades</span>
+          <span className="ml-3 text-[10px] sm:text-xs text-muted-foreground truncate">app.licitacaoapp.com.br/oportunidades</span>
         </div>
-        <div className="p-5 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">Oportunidades hoje</p>
-              <p className="text-2xl font-bold text-primary">42 licitações</p>
+              <p className="text-xl sm:text-2xl font-bold text-primary">42 licitações</p>
             </div>
             <span className="inline-flex items-center gap-1 rounded-full bg-success/10 text-success px-2.5 py-1 text-xs font-semibold">
               <TrendingUp className="h-3 w-3" /> +18%
@@ -220,8 +220,8 @@ function HeroDashboard() {
               { label: "R$ 300.000", sub: "Refeições escolares" },
               { label: "R$ 1.000.000", sub: "Suporte de TI" },
             ].map((c) => (
-              <div key={c.label} className="rounded-lg border border-border p-3 bg-background">
-                <p className="text-sm font-bold text-primary">{c.label}</p>
+              <div key={c.label} className="rounded-lg border border-border p-2 sm:p-3 bg-background min-w-0">
+                <p className="text-xs sm:text-sm font-bold text-primary truncate">{c.label}</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">{c.sub}</p>
               </div>
             ))}
@@ -232,13 +232,13 @@ function HeroDashboard() {
             { n: "Pregão Eletrônico 112/2025", org: "Ministério da Saúde", score: 74, color: "bg-brand" },
             { n: "Concorrência 008/2025", org: "Secretaria de Educação", score: 48, color: "bg-yellow-500" },
           ].map((row) => (
-            <div key={row.n} className="flex items-center justify-between rounded-lg border border-border p-3 hover:bg-secondary/30 transition">
+            <div key={row.n} className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 hover:bg-secondary/30 transition">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{row.n}</p>
+                <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{row.n}</p>
                 <p className="text-xs text-muted-foreground truncate">{row.org}</p>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="w-24 h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div className="w-14 sm:w-24 h-1.5 rounded-full bg-secondary overflow-hidden">
                   <div className={`h-full ${row.color}`} style={{ width: `${row.score}%` }} />
                 </div>
                 <span className="text-xs font-bold text-primary w-8 text-right">{row.score}</span>
@@ -266,15 +266,15 @@ function Problem() {
     { icon: HelpCircle, text: "Não sabem se vale a pena participar" },
   ];
   return (
-    <section className="py-24 border-t border-border bg-secondary/30">
-      <div className="mx-auto max-w-7xl px-6">
+    <section className="py-16 sm:py-24 border-t border-border bg-secondary/30">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-brand uppercase tracking-wider">O problema</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary">
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
             Por que a maioria das empresas desiste das licitações?
           </h2>
         </div>
-        <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mt-10 sm:mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((it) => (
             <div
               key={it.text}
@@ -287,7 +287,7 @@ function Problem() {
             </div>
           ))}
         </div>
-        <p className="mt-12 text-lg text-muted-foreground max-w-3xl leading-relaxed">
+        <p className="mt-10 sm:mt-12 text-base sm:text-lg text-muted-foreground max-w-3xl leading-relaxed">
           O problema não é falta de oportunidade. O governo compra <strong className="text-foreground">bilhões de reais todos os anos</strong>. O problema é saber quais oportunidades realmente
           fazem sentido para sua empresa.
         </p>
@@ -321,15 +321,15 @@ function Solution() {
     },
   ];
   return (
-    <section id="solucao" className="py-24">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="solucao" className="py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-brand uppercase tracking-wider">A solução</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary">
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
             Como o Licitação App resolve isso
           </h2>
         </div>
-        <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="mt-10 sm:mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {cards.map((c) => (
             <div
               key={c.title}
@@ -356,14 +356,14 @@ function HowItWorks() {
     { n: "03", title: "Decida com base em dados reais", desc: "Score de viabilidade, histórico de concorrentes e faixa de preço competitivo na palma da mão.", icon: TrendingUp },
   ];
   return (
-    <section className="py-24 border-t border-border bg-primary text-primary-foreground relative overflow-hidden">
+    <section className="py-16 sm:py-24 border-t border-border bg-primary text-primary-foreground relative overflow-hidden">
       <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} aria-hidden />
-      <div className="relative mx-auto max-w-7xl px-6">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-success uppercase tracking-wider">Como funciona</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold">Funciona em 3 passos</h2>
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold">Funciona em 3 passos</h2>
         </div>
-        <div className="mt-14 grid md:grid-cols-3 gap-6">
+        <div className="mt-10 sm:mt-14 grid md:grid-cols-3 gap-6">
           {steps.map((s, i) => (
             <div key={s.n} className="relative">
               <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-8 h-full">
@@ -390,28 +390,28 @@ function HowItWorks() {
 /* ---------------- DASHBOARD SECTION ---------------- */
 function DashboardSection() {
   return (
-    <section id="dashboard" className="py-24">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="dashboard" className="py-16 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-brand uppercase tracking-wider">A plataforma</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary">
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
             Veja exatamente o que você recebe
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground">
             Dados objetivos para decidir em segundos, não em horas.
           </p>
         </div>
 
-        <div className="mt-14 grid lg:grid-cols-3 gap-5">
+        <div className="mt-10 sm:mt-14 grid lg:grid-cols-3 gap-4 sm:gap-5">
           {/* Score */}
-          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
+          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[var(--shadow-soft)]">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-primary">Score de viabilidade</h3>
               <span className="text-xs text-muted-foreground">Pregão 045/2025</span>
             </div>
-            <div className="mt-6 flex items-center gap-8">
+            <div className="mt-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
               <ScoreRing value={87} />
-              <div className="flex-1 space-y-3">
+              <div className="flex-1 w-full space-y-3">
                 {[
                   { label: "Mercado Aberto", value: 80, color: "var(--success)" },
                   { label: "Mercado Moderado", value: 55, color: "var(--brand)" },
@@ -558,15 +558,15 @@ function Differentials() {
     { icon: Award, text: "Experiência real de mercado" },
   ];
   return (
-    <section className="py-24 border-t border-border bg-secondary/30">
-      <div className="mx-auto max-w-7xl px-6">
+    <section className="py-16 sm:py-24 border-t border-border bg-secondary/30">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="text-sm font-semibold text-brand uppercase tracking-wider">Diferenciais</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary">
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
             O que torna o Licitação App diferente
           </h2>
         </div>
-        <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-10 sm:mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {items.map((it) => (
             <div key={it.text} className="flex items-start gap-3 rounded-xl border border-border bg-card p-5 hover:border-brand/40 transition">
               <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-success/10 text-success shrink-0">
@@ -589,23 +589,23 @@ function Differentials() {
 /* ---------------- AUTHORITY ---------------- */
 function Authority() {
   return (
-    <section className="py-24">
-      <div className="mx-auto max-w-5xl px-6">
-        <div className="relative rounded-3xl border border-border bg-card p-10 md:p-16 overflow-hidden shadow-[var(--shadow-elegant)]">
+    <section className="py-16 sm:py-24">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="relative rounded-3xl border border-border bg-card p-6 sm:p-10 md:p-16 overflow-hidden shadow-[var(--shadow-elegant)]">
           <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-[var(--gradient-brand)] opacity-10 blur-3xl" aria-hidden />
-          <div className="relative grid md:grid-cols-[auto,1fr] gap-10 items-center">
-            <div className="flex items-center justify-center h-32 w-32 rounded-2xl bg-[var(--gradient-brand)] text-brand-foreground shadow-[var(--shadow-elegant)]">
-              <Award className="h-14 w-14" />
+          <div className="relative grid md:grid-cols-[auto,1fr] gap-6 sm:gap-10 items-center">
+            <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 rounded-2xl bg-[var(--gradient-brand)] text-brand-foreground shadow-[var(--shadow-elegant)] mx-auto md:mx-0">
+              <Award className="h-12 w-12 sm:h-14 sm:w-14" />
             </div>
             <div>
               <p className="text-sm font-semibold text-brand uppercase tracking-wider">Autoridade</p>
-              <h2 className="mt-3 text-3xl md:text-4xl font-bold text-primary">
+              <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-bold text-primary">
                 Conhecimento construído em décadas
               </h2>
-              <p className="mt-5 text-lg text-muted-foreground leading-relaxed">
+              <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
                 O sistema foi criado por um especialista com mais de <strong className="text-foreground">20 anos de atuação em licitações públicas</strong>, incluindo mais de uma década como pregoeiro responsável por julgamentos e contratações.
               </p>
-              <div className="mt-6 flex flex-wrap gap-6 text-sm">
+              <div className="mt-6 flex flex-wrap gap-x-6 gap-y-4 text-sm">
                 <Stat n="20+" label="anos de experiência" />
                 <Stat n="10+" label="anos como pregoeiro" />
                 <Stat n="R$ 1B+" label="em contratos analisados" />
@@ -655,20 +655,20 @@ function Pricing() {
     },
   ];
   return (
-    <section id="planos" className="py-24 border-t border-border">
-      <div className="mx-auto max-w-7xl px-6">
+    <section id="planos" className="py-16 sm:py-24 border-t border-border">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-sm font-semibold text-brand uppercase tracking-wider">Planos</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary">
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
             Escolha o plano certo para sua empresa
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">Sem fidelidade. Cancele quando quiser.</p>
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground">Sem fidelidade. Cancele quando quiser.</p>
         </div>
-        <div className="mt-14 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="mt-12 sm:mt-14 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {plans.map((p) => (
             <div
               key={p.name}
-              className={`relative rounded-2xl border p-8 flex flex-col ${
+              className={`relative rounded-2xl border p-6 sm:p-8 flex flex-col ${
                 p.featured
                   ? "border-brand bg-primary text-primary-foreground shadow-[var(--shadow-elegant)] md:scale-105"
                   : "border-border bg-card"
@@ -727,23 +727,23 @@ function FAQSection() {
     { q: "Como funciona o suporte durante pregões (plano Profissional)?", a: "Você tem acesso a um especialista por chat ao vivo no horário do pregão, para tirar dúvidas estratégicas em tempo real e revisar lances." },
   ];
   return (
-    <section id="faq" className="py-24 border-t border-border bg-secondary/30">
-      <div className="mx-auto max-w-3xl px-6">
+    <section id="faq" className="py-16 sm:py-24 border-t border-border bg-secondary/30">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <div className="text-center">
           <p className="text-sm font-semibold text-brand uppercase tracking-wider">Dúvidas frequentes</p>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold text-primary">Perguntas frequentes</h2>
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">Perguntas frequentes</h2>
         </div>
-        <Accordion type="single" collapsible className="mt-12 space-y-3">
+        <Accordion type="single" collapsible className="mt-10 sm:mt-12 space-y-3">
           {faqs.map((f, i) => (
             <AccordionItem
               key={i}
               value={`item-${i}`}
-              className="rounded-xl border border-border bg-card px-5"
+              className="rounded-xl border border-border bg-card px-4 sm:px-5"
             >
-              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-4">
+              <AccordionTrigger className="text-left text-sm sm:text-base font-semibold text-foreground hover:no-underline py-4">
                 {f.q}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-relaxed pb-4">
+              <AccordionContent className="text-sm sm:text-base text-muted-foreground leading-relaxed pb-4">
                 {f.a}
               </AccordionContent>
             </AccordionItem>
@@ -757,23 +757,23 @@ function FAQSection() {
 /* ---------------- FINAL CTA ---------------- */
 function FinalCTA() {
   return (
-    <section id="cta" className="py-28 bg-primary text-primary-foreground relative overflow-hidden">
+    <section id="cta" className="py-20 sm:py-28 bg-primary text-primary-foreground relative overflow-hidden">
       <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(circle at 50% 50%, oklch(0.55 0.21 263 / 0.35), transparent 60%)" }} aria-hidden />
       <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} aria-hidden />
-      <div className="relative mx-auto max-w-4xl px-6 text-center">
-        <h2 className="text-4xl md:text-6xl font-extrabold leading-[1.05]">
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 text-center">
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-[1.05]">
           Seu próximo contrato com o governo<br />
           <span className="bg-gradient-to-r from-success to-brand bg-clip-text text-transparent">
             pode estar publicado hoje.
           </span>
         </h2>
-        <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
+        <p className="mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/80 max-w-2xl mx-auto">
           Pare de procurar oportunidades manualmente. Deixe o Licitação App fazer isso por você.
         </p>
-        <div className="mt-10">
+        <div className="mt-8 sm:mt-10">
           <a
             href="#planos"
-            className="inline-flex items-center gap-2 rounded-2xl bg-success px-10 py-5 text-base md:text-lg font-bold text-white hover:bg-success/90 transition shadow-[0_20px_60px_-15px_oklch(0.72_0.17_150/0.5)] hover:scale-[1.02] active:scale-100 duration-200"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-success px-6 sm:px-10 py-4 sm:py-5 text-sm sm:text-base md:text-lg font-bold text-white hover:bg-success/90 transition shadow-[0_20px_60px_-15px_oklch(0.72_0.17_150/0.5)] hover:scale-[1.02] active:scale-100 duration-200 w-full sm:w-auto"
           >
             QUERO COMEÇAR AGORA <ArrowRight className="h-5 w-5" />
           </a>
@@ -787,8 +787,8 @@ function FinalCTA() {
 /* ---------------- FOOTER ---------------- */
 function Footer() {
   return (
-    <footer className="border-t border-border py-12 bg-background">
-      <div className="mx-auto max-w-7xl px-6 grid md:grid-cols-[1fr,auto] gap-8 items-start">
+    <footer className="border-t border-border py-10 sm:py-12 bg-background">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 grid md:grid-cols-[1fr,auto] gap-8 items-start">
         <div>
           <div className="flex items-center gap-2 font-bold text-primary">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--gradient-brand)] text-brand-foreground">
@@ -808,7 +808,7 @@ function Footer() {
           <a href="#" className="hover:text-foreground">Política de Privacidade</a>
         </nav>
       </div>
-      <div className="mx-auto max-w-7xl px-6 mt-10 pt-6 border-t border-border text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 mt-10 pt-6 border-t border-border text-xs text-muted-foreground flex flex-wrap justify-between gap-3">
         <p>© {new Date().getFullYear()} Licitação App. Todos os direitos reservados.</p>
         <p>Feito com método, dados e mais de 20 anos de experiência em licitações.</p>
       </div>
