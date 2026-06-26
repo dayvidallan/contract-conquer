@@ -102,24 +102,24 @@ function Index() {
 /* ---------------- NAV ---------------- */
 function Nav() {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/60">
+    <header className="sticky top-0 z-50 bg-primary border-b border-white/10 shadow-lg shadow-black/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         <a href="#" className="flex items-center min-w-0">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 overflow-hidden rounded-lg shrink-0">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 overflow-hidden rounded-lg shrink-0 ring-1 ring-white/10">
             <img src={logoAsset.url} alt="Licitação App" className="h-full w-full object-cover object-top" />
           </div>
         </a>
-        <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#solucao" className="hover:text-foreground transition-colors">Solução</a>
-          <a href="#dashboard" className="hover:text-foreground transition-colors">Plataforma</a>
-          <a href="#planos" className="hover:text-foreground transition-colors">Planos</a>
-          <a href="#faq" className="hover:text-foreground transition-colors">FAQ</a>
+        <nav className="hidden md:flex items-center gap-8 text-sm text-primary-foreground/80">
+          <a href="#solucao" className="hover:text-primary-foreground transition-colors">Solução</a>
+          <a href="#dashboard" className="hover:text-primary-foreground transition-colors">Plataforma</a>
+          <a href="#planos" className="hover:text-primary-foreground transition-colors">Planos</a>
+          <a href="#faq" className="hover:text-primary-foreground transition-colors">FAQ</a>
         </nav>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <a href="#planos" className="hidden sm:inline text-sm font-medium text-foreground/80 hover:text-foreground">Entrar</a>
+          <a href="#planos" className="hidden sm:inline text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground">Entrar</a>
           <a
             href="#planos"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-brand-foreground hover:bg-brand-dark transition shadow-sm whitespace-nowrap"
           >
             Testar <ArrowRight className="h-3.5 w-3.5" />
           </a>
