@@ -10,6 +10,9 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import faviconIco from "@/assets/favicon.ico.asset.json";
+import favicon32 from "@/assets/favicon-32x32.png.asset.json";
+import appleTouch from "@/assets/apple-touch-icon.png.asset.json";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -95,6 +98,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "icon", type: "image/x-icon", href: faviconIco.url },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: favicon32.url },
+      { rel: "apple-touch-icon", sizes: "180x180", href: appleTouch.url },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
