@@ -21,6 +21,7 @@ import {
   Database,
   ChevronDown,
 } from "lucide-react";
+import logoAsset from "@/assets/licitacao-app-logo.jpg.asset.json";
 import { useState } from "react";
 import {
   Accordion,
@@ -103,11 +104,10 @@ function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/60">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-        <a href="#" className="flex items-center gap-2 font-bold text-primary min-w-0">
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--gradient-brand)] text-brand-foreground">
-            <Radar className="h-4 w-4" />
-          </span>
-          <span className="tracking-tight truncate">Licitação App</span>
+        <a href="#" className="flex items-center min-w-0">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 overflow-hidden rounded-lg shrink-0">
+            <img src={logoAsset.url} alt="Licitação App" className="h-full w-full object-cover object-top" />
+          </div>
         </a>
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <a href="#solucao" className="hover:text-foreground transition-colors">Solução</a>
@@ -790,11 +790,8 @@ function Footer() {
     <footer className="border-t border-border py-10 sm:py-12 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 grid md:grid-cols-[1fr,auto] gap-8 items-start">
         <div>
-          <div className="flex items-center gap-2 font-bold text-primary">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--gradient-brand)] text-brand-foreground">
-              <Radar className="h-4 w-4" />
-            </span>
-            Licitação App
+          <div className="flex items-center">
+            <img src={logoAsset.url} alt="Licitação App" className="h-16 sm:h-20 w-auto" />
           </div>
           <p className="mt-3 text-sm text-muted-foreground max-w-md">
             Inteligência de dados para vencer licitações públicas no Brasil.
