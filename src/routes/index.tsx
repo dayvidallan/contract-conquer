@@ -20,6 +20,14 @@ import {
   Headphones,
   Database,
   ChevronDown,
+  Menu,
+  X,
+  LayoutDashboard,
+  Bell,
+  Settings,
+  FileText,
+  Users,
+  Search,
 } from "lucide-react";
 import logoAsset from "@/assets/licitacao-app-logo.jpg.asset.json";
 import { useState } from "react";
@@ -101,30 +109,82 @@ function Index() {
 
 /* ---------------- NAV ---------------- */
 function Nav() {
+  const [open, setOpen] = useState(false);
+  const links = [
+    { href: "#solucao", label: "Funcionalidades" },
+    { href: "#planos", label: "Planos" },
+    { href: "#dashboard", label: "Sobre" },
+    { href: "#faq", label: "FAQ" },
+  ];
   return (
-    <header className="sticky top-0 z-50 bg-primary border-b border-white/10 shadow-lg shadow-black/10">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-        <a href="#" className="flex items-center min-w-0">
-          <div className="h-9 w-9 sm:h-10 sm:w-10 overflow-hidden rounded-lg shrink-0 ring-1 ring-white/10">
+    <header className="sticky top-0 z-50 bg-primary/85 backdrop-blur-xl supports-[backdrop-filter]:bg-primary/75 border-b border-white/[0.06] shadow-[0_1px_0_0_rgba(255,255,255,0.04),0_8px_30px_-12px_rgba(0,0,0,0.5)]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 h-[72px] sm:h-[76px] grid grid-cols-[auto_1fr_auto] items-center gap-4">
+        {/* Logo */}
+        <a href="#" className="flex items-center gap-2.5 min-w-0 group">
+          <div className="h-9 w-9 overflow-hidden rounded-lg shrink-0 ring-1 ring-white/10 shadow-sm">
             <img src={logoAsset.url} alt="Licitação App" className="h-full w-full object-cover object-top" />
           </div>
+          <span className="hidden sm:inline text-sm font-semibold text-primary-foreground tracking-tight">Licitação App</span>
         </a>
-        <nav className="hidden md:flex items-center gap-8 text-sm text-primary-foreground/80">
-          <a href="#solucao" className="hover:text-primary-foreground transition-colors">Solução</a>
-          <a href="#dashboard" className="hover:text-primary-foreground transition-colors">Plataforma</a>
-          <a href="#planos" className="hover:text-primary-foreground transition-colors">Planos</a>
-          <a href="#faq" className="hover:text-primary-foreground transition-colors">FAQ</a>
+
+        {/* Centered nav */}
+        <nav className="hidden md:flex items-center justify-center gap-1">
+          {links.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="relative px-3.5 py-2 text-[13px] font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors rounded-md after:absolute after:left-3.5 after:right-3.5 after:-bottom-px after:h-px after:bg-gradient-to-r after:from-transparent after:via-brand after:to-transparent after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300"
+            >
+              {l.label}
+            </a>
+          ))}
         </nav>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <a href="#planos" className="hidden sm:inline text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground">Entrar</a>
+
+        {/* Right actions */}
+        <div className="flex items-center gap-2 sm:gap-3 justify-end">
+          <a href="#planos" className="hidden lg:inline text-[13px] font-medium text-primary-foreground/70 hover:text-primary-foreground transition-colors">Entrar</a>
           <a
             href="#planos"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-brand-foreground hover:bg-brand-dark transition shadow-sm whitespace-nowrap"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-[13px] font-semibold text-brand-foreground hover:bg-brand-dark hover:shadow-[0_8px_24px_-8px_oklch(0.55_0.21_263/0.6)] transition-all shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)] whitespace-nowrap"
           >
-            Testar <ArrowRight className="h-3.5 w-3.5" />
+            Começar grátis <ArrowRight className="h-3.5 w-3.5" />
           </a>
+          <button
+            type="button"
+            aria-label="Abrir menu"
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/5 transition"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden border-t border-white/[0.06] bg-primary/95 backdrop-blur-xl">
+          <nav className="mx-auto max-w-7xl px-4 py-4 flex flex-col gap-1">
+            {links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className="px-3 py-2.5 rounded-lg text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/5 transition-colors"
+              >
+                {l.label}
+              </a>
+            ))}
+            <a
+              href="#planos"
+              onClick={() => setOpen(false)}
+              className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground hover:bg-brand-dark transition"
+            >
+              Começar grátis <ArrowRight className="h-4 w-4" />
+            </a>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
