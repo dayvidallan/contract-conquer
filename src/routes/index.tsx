@@ -450,11 +450,11 @@ function HowItWorks() {
 /* ---------------- DASHBOARD SECTION ---------------- */
 function DashboardSection() {
   return (
-    <section id="dashboard" className="py-16 sm:py-24">
+    <section id="dashboard" className="py-20 sm:py-28 bg-gradient-to-b from-secondary/40 to-background border-y border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-brand uppercase tracking-wider">A plataforma</p>
-          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-xs font-semibold text-brand uppercase tracking-[0.18em]">A plataforma</p>
+          <h2 className="mt-3 text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight">
             Veja exatamente o que você recebe
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground">
@@ -462,117 +462,239 @@ function DashboardSection() {
           </p>
         </div>
 
-        <div className="mt-10 sm:mt-14 grid lg:grid-cols-3 gap-4 sm:gap-5">
-          {/* Score */}
-          <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[var(--shadow-soft)]">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-primary">Score de viabilidade</h3>
-              <span className="text-xs text-muted-foreground">Pregão 045/2025</span>
-            </div>
-            <div className="mt-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-              <ScoreRing value={87} />
-              <div className="flex-1 w-full space-y-3">
-                {[
-                  { label: "Mercado Aberto", value: 80, color: "var(--success)" },
-                  { label: "Mercado Moderado", value: 55, color: "var(--brand)" },
-                  { label: "Mercado Dominado", value: 18, color: "oklch(0.6 0.18 30)" },
-                ].map((b) => (
-                  <div key={b.label}>
-                    <div className="flex justify-between text-xs font-medium">
-                      <span className="text-foreground">{b.label}</span>
-                      <span className="text-muted-foreground">{b.value}%</span>
-                    </div>
-                    <div className="mt-1.5 h-2 rounded-full bg-secondary overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${b.value}%`, background: b.color }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <PlatformMockup />
+      </div>
+    </section>
+  );
+}
 
-          {/* Price range */}
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
-            <h3 className="font-bold text-primary">Faixa de preço competitiva</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Baseado em 28 vitórias similares</p>
-            <div className="mt-8">
-              <div className="relative h-2 rounded-full bg-secondary">
-                <div className="absolute inset-y-0 left-[25%] right-[25%] rounded-full bg-[var(--gradient-brand)]" />
-                <div className="absolute -top-1 left-[50%] -translate-x-1/2 h-4 w-4 rounded-full bg-success border-2 border-background shadow" />
+function PlatformMockup() {
+  return (
+    <div className="relative mt-12 sm:mt-16">
+      {/* glow */}
+      <div className="pointer-events-none absolute -inset-6 sm:-inset-10 bg-[radial-gradient(ellipse_at_center,oklch(0.55_0.21_263/0.18),transparent_70%)] blur-2xl" aria-hidden />
+
+      <div className="relative rounded-2xl sm:rounded-[1.75rem] border border-border bg-card overflow-hidden shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] ring-1 ring-black/[0.03]">
+        {/* Top window bar */}
+        <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-b border-border bg-secondary/50">
+          <span className="h-2.5 w-2.5 rounded-full bg-destructive/50" />
+          <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
+          <div className="ml-3 hidden sm:flex items-center gap-2 px-3 py-1 rounded-md bg-background/80 border border-border text-[11px] text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
+            app.licitacaoapp.com.br/dashboard
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-[220px_1fr]">
+          {/* Sidebar */}
+          <aside className="hidden lg:flex flex-col gap-1 bg-primary text-primary-foreground p-4 border-r border-white/5">
+            <div className="px-2 pb-3 mb-2 border-b border-white/10">
+              <p className="text-[10px] uppercase tracking-wider text-primary-foreground/40">Workspace</p>
+              <p className="mt-1 text-sm font-semibold truncate">Empresa Modelo LTDA</p>
+            </div>
+            {[
+              { icon: LayoutDashboard, label: "Dashboard", active: true },
+              { icon: Radar, label: "Oportunidades", badge: "42" },
+              { icon: FileText, label: "Editais" },
+              { icon: TrendingUp, label: "Concorrência" },
+              { icon: ShieldCheck, label: "Documentos" },
+              { icon: Bell, label: "Alertas", badge: "3" },
+              { icon: Users, label: "Equipe" },
+              { icon: Settings, label: "Configurações" },
+            ].map((it) => (
+              <div
+                key={it.label}
+                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] ${
+                  it.active
+                    ? "bg-white/10 text-primary-foreground font-medium"
+                    : "text-primary-foreground/65 hover:text-primary-foreground"
+                }`}
+              >
+                <it.icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 truncate">{it.label}</span>
+                {it.badge && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-brand/90 text-brand-foreground">{it.badge}</span>
+                )}
               </div>
-              <div className="mt-3 flex justify-between text-xs text-muted-foreground">
-                <span>R$ 142k</span>
-                <span className="font-bold text-success">R$ 198k</span>
-                <span>R$ 254k</span>
+            ))}
+          </aside>
+
+          {/* Main content */}
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 bg-background min-w-0">
+            {/* Topbar */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Visão geral</p>
+                <h3 className="text-lg sm:text-xl font-bold text-primary truncate">Boa tarde, Empresa Modelo 👋</h3>
+              </div>
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-card text-xs text-muted-foreground">
+                  <Search className="h-3.5 w-3.5" />
+                  Buscar…
+                </div>
+                <div className="h-8 w-8 rounded-full bg-[var(--gradient-brand)] grid place-items-center text-[11px] font-bold text-brand-foreground">EM</div>
               </div>
             </div>
-          </div>
 
-          {/* Historic winners */}
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
-            <h3 className="font-bold text-primary">Histórico de vencedores</h3>
-            <div className="mt-5 space-y-3">
+            {/* KPI row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { n: "Alfa Suprimentos LTDA", w: 14 },
-                { n: "Beta Comércio S/A", w: 9 },
-                { n: "Gama Soluções", w: 6 },
-              ].map((c) => (
-                <div key={c.n} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                      {c.n[0]}
-                    </div>
-                    <span className="text-sm font-medium truncate">{c.n}</span>
-                  </div>
-                  <span className="text-xs font-bold text-brand">{c.w} vitórias</span>
+                { label: "Oportunidades", value: "42", trend: "+18%", color: "text-success" },
+                { label: "Score médio", value: "87", trend: "+6 pts", color: "text-success" },
+                { label: "Em análise", value: "12", trend: "5 hoje", color: "text-brand" },
+                { label: "Vitórias (mês)", value: "8", trend: "R$ 1.2M", color: "text-success" },
+              ].map((k) => (
+                <div key={k.label} className="rounded-xl border border-border bg-card p-3 sm:p-4">
+                  <p className="text-[11px] text-muted-foreground">{k.label}</p>
+                  <p className="mt-1 text-xl sm:text-2xl font-extrabold text-primary tracking-tight">{k.value}</p>
+                  <p className={`mt-1 text-[11px] font-semibold ${k.color}`}>{k.trend}</p>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Checklist */}
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
-            <h3 className="font-bold text-primary">Checklist documental</h3>
-            <div className="mt-5 space-y-2.5">
-              {[
-                { d: "CND Federal", ok: true },
-                { d: "CND Estadual", ok: true },
-                { d: "FGTS", ok: true },
-                { d: "Atestado de capacidade técnica", ok: false },
-              ].map((d) => (
-                <div key={d.d} className="flex items-center gap-2 text-sm">
-                  <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full ${d.ok ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive"}`}>
-                    {d.ok ? <Check className="h-3 w-3" /> : <FileX className="h-3 w-3" />}
-                  </span>
-                  <span className={d.ok ? "text-foreground" : "text-muted-foreground line-through"}>{d.d}</span>
+            {/* Two-column grid */}
+            <div className="grid lg:grid-cols-3 gap-3 sm:gap-4">
+              {/* Score viabilidade */}
+              <div className="lg:col-span-2 rounded-xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-primary">Score de viabilidade</h4>
+                    <p className="text-[11px] text-muted-foreground truncate">Pregão Eletrônico 045/2025 · Prefeitura de Campinas</p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-success/10 text-success">Alta chance</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Alerts */}
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
-            <h3 className="font-bold text-primary">Alertas de vencimento</h3>
-            <div className="mt-5 space-y-3">
-              <div className="flex items-start gap-2 rounded-lg bg-destructive/5 border border-destructive/20 p-3">
-                <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-destructive">CND Federal</p>
-                  <p className="text-[11px] text-muted-foreground">Vence em 12 dias</p>
+                <div className="mt-5 flex flex-col sm:flex-row items-center gap-5 sm:gap-7">
+                  <ScoreRing value={87} />
+                  <div className="flex-1 w-full space-y-3">
+                    {[
+                      { label: "Mercado Aberto", value: 80, color: "var(--success)" },
+                      { label: "Mercado Moderado", value: 55, color: "var(--brand)" },
+                      { label: "Mercado Dominado", value: 18, color: "oklch(0.6 0.18 30)" },
+                    ].map((b) => (
+                      <div key={b.label}>
+                        <div className="flex justify-between text-[11px] font-medium">
+                          <span className="text-foreground">{b.label}</span>
+                          <span className="text-muted-foreground">{b.value}%</span>
+                        </div>
+                        <div className="mt-1.5 h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${b.value}%`, background: b.color }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-2 rounded-lg bg-yellow-50 border border-yellow-200 p-3">
-                <Clock className="h-4 w-4 text-yellow-700 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-yellow-900">FGTS</p>
-                  <p className="text-[11px] text-muted-foreground">Vence em 28 dias</p>
+
+              {/* Faixa preço */}
+              <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                <h4 className="text-sm font-bold text-primary">Faixa competitiva</h4>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">Baseado em 28 vitórias similares</p>
+                <div className="mt-8">
+                  <div className="relative h-1.5 rounded-full bg-secondary">
+                    <div className="absolute inset-y-0 left-[25%] right-[25%] rounded-full bg-[var(--gradient-brand)]" />
+                    <div className="absolute -top-1.5 left-[50%] -translate-x-1/2 h-[18px] w-[18px] rounded-full bg-success border-[3px] border-background shadow-md" />
+                  </div>
+                  <div className="mt-3 flex justify-between text-[11px] text-muted-foreground">
+                    <span>R$ 142k</span>
+                    <span className="font-bold text-success">R$ 198k</span>
+                    <span>R$ 254k</span>
+                  </div>
+                </div>
+                <div className="mt-5 grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="rounded-lg bg-secondary/60 p-2">
+                    <p className="text-muted-foreground">Margem est.</p>
+                    <p className="font-bold text-primary">18,4%</p>
+                  </div>
+                  <div className="rounded-lg bg-secondary/60 p-2">
+                    <p className="text-muted-foreground">Concorrentes</p>
+                    <p className="font-bold text-primary">6</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Histórico vencedores */}
+              <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-primary">Vencedores recorrentes</h4>
+                  <span className="text-[10px] text-muted-foreground">12 meses</span>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {[
+                    { n: "Alfa Suprimentos LTDA", w: 14, tag: "Líder", color: "bg-brand/10 text-brand" },
+                    { n: "Beta Comércio S/A", w: 9, tag: "Forte", color: "bg-success/10 text-success" },
+                    { n: "Gama Soluções", w: 6, tag: "Médio", color: "bg-yellow-500/10 text-yellow-700" },
+                  ].map((c) => (
+                    <div key={c.n} className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                          {c.n[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-medium truncate">{c.n}</p>
+                          <p className="text-[10px] text-muted-foreground">{c.w} vitórias</p>
+                        </div>
+                      </div>
+                      <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-md ${c.color}`}>{c.tag}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Checklist */}
+              <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-primary">Checklist documental</h4>
+                  <span className="text-[10px] font-bold text-success">75%</span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-secondary overflow-hidden">
+                  <div className="h-full w-3/4 rounded-full bg-success" />
+                </div>
+                <div className="mt-4 space-y-2">
+                  {[
+                    { d: "CND Federal", ok: true },
+                    { d: "CND Estadual", ok: true },
+                    { d: "FGTS", ok: true },
+                    { d: "Atestado técnico", ok: false },
+                  ].map((d) => (
+                    <div key={d.d} className="flex items-center gap-2 text-[12px]">
+                      <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full ${d.ok ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive"}`}>
+                        {d.ok ? <Check className="h-2.5 w-2.5" /> : <FileX className="h-2.5 w-2.5" />}
+                      </span>
+                      <span className={d.ok ? "text-foreground" : "text-muted-foreground line-through"}>{d.d}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Alertas */}
+              <div className="lg:col-span-2 rounded-xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-primary">Alertas de vencimento</h4>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-destructive/10 text-destructive">2 urgentes</span>
+                </div>
+                <div className="mt-4 grid sm:grid-cols-2 gap-2.5">
+                  <div className="flex items-start gap-2.5 rounded-lg bg-destructive/5 border border-destructive/20 p-3">
+                    <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-bold text-destructive">CND Federal</p>
+                      <p className="text-[10px] text-muted-foreground">Vence em 12 dias · Renovar agora</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5 rounded-lg bg-yellow-50 border border-yellow-200 p-3">
+                    <Clock className="h-4 w-4 text-yellow-700 shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-bold text-yellow-900">FGTS</p>
+                      <p className="text-[10px] text-yellow-900/70">Vence em 28 dias</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
