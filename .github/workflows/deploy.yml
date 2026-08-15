@@ -39,16 +39,22 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Sem --config: o wrangler sobe a árvore de diretórios procurando
-      # .wrangler/deploy/config.json e segue o `configPath` de lá pro
-      # wrangler.json que o build acabou de gerar.
+      # wranglerVersion fixo de propósito: o default da action é o wrangler 3.90,
+      # que não conhece a config redirecionada em .wrangler/deploy/config.json —
+      # ele não achava config nenhuma e falhava com "Missing entry-point".
+      #
+      # E passamos --config explícito em vez de confiar no redirect: assim o
+      # deploy não depende de qual wrangler a action resolveu instalar. Os
+      # caminhos de dentro do arquivo (main: index.mjs, assets: ../public) são
+      # resolvidos relativos a ele, então apontar direto funciona igual.
       - name: Deploy
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+          wranglerVersion: "4.123.0"
+          command: deploy --config .output/server/wrangler.json
 
       # A verificação que importa é contra a URL publicada de verdade, não
       # contra nada rodando dentro do runner. A URL vem do output da própria
