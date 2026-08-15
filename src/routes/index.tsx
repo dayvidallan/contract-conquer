@@ -159,8 +159,24 @@ async function fetchPlanosPublico(): Promise<PlanoPublico[] | null> {
   }
 }
 
+// As offers do JSON-LD saem dos mesmos planos que a Pricing recebe, pra não
+// existir um segundo lugar onde o preço vive. Sem planos (API fora, ou head
+// avaliado antes do loader resolver) o schema sai sem `offers` em vez de
+// anunciar preço fixo pro Google — `offers` é opcional em SoftwareApplication,
+// e resultado de busca fica em cache muito depois da página já estar certa,
+// então preço errado ali é ainda mais caro de desfazer do que na tela.
+function buildOffers(planos: PlanoPublico[] | null | undefined) {
+  if (!planos || planos.length === 0) return undefined;
+  return planos.map((p) => ({
+    "@type": "Offer",
+    name: p.nomeExibicao,
+    price: String(p.preco),
+    priceCurrency: "BRL",
+  }));
+}
+
 export const Route = createFileRoute("/")({
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Licitação App — Venda para o governo com inteligência de dados" },
       {
@@ -195,12 +211,9 @@ export const Route = createFileRoute("/")({
           operatingSystem: "Web",
           description:
             "Plataforma SaaS para encontrar, analisar e vencer licitações públicas no Brasil.",
-          offers: [
-            { "@type": "Offer", name: "Grátis", price: "0", priceCurrency: "BRL" },
-            { "@type": "Offer", name: "Essencial", price: "197", priceCurrency: "BRL" },
-            { "@type": "Offer", name: "Inteligência", price: "397", priceCurrency: "BRL" },
-            { "@type": "Offer", name: "Estratégico", price: "997", priceCurrency: "BRL" },
-          ],
+          // `undefined` some do JSON.stringify — sem planos, a chave nem
+          // aparece no schema.
+          offers: buildOffers(loaderData?.planos),
         }),
       },
     ],
