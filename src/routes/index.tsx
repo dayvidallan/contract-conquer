@@ -37,6 +37,127 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useEffect } from "react";
+
+// Propagação do link de convite de lead (frente de captação, PNCP + Receita
+// Federal) — se a pessoa chegou aqui por um email de oportunidade, a URL
+// vem com ?lead=TOKEN. Capturamos uma vez no carregamento (client-only,
+// seguro para SSR) e propagamos pro botão real de cadastro, pra completar
+// o pré-preenchimento (CNPJ/razão social/CNAEs) que a Fase 4 do backend
+// já faz a partir desse token.
+function useLeadToken(): string | null {
+  const [token, setToken] = useState<string | null>(null);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const lead = params.get("lead");
+    if (lead) setToken(lead);
+  }, []);
+  return token;
+}
+
+// URL real do app (confirmada via deploy do Coolify, subdomínio já em uso
+// em produção) — nunca aponta para dentro desta própria landing.
+const APP_CADASTRO_URL = "https://app.licitacaoapp.com.br/cadastro";
+
+function buildCadastroUrl(leadToken: string | null): string {
+  if (!leadToken) return APP_CADASTRO_URL;
+  return `${APP_CADASTRO_URL}?lead=${encodeURIComponent(leadToken)}`;
+}
+
+// Planos pagos vão pra um endpoint público que resolve o link de WhatsApp
+// do especialista com a mensagem já pré-preenchida (plano + dados do lead,
+// se veio de um) — sem precisar de sessão, o visitante da landing nunca
+// está logado.
+const WHATSAPP_PLANOS_URL = "https://app.licitacaoapp.com.br/api/whatsapp-planos-publico";
+
+// O endpoint resolve o número e o texto da mensagem e redireciona pro
+// WhatsApp — daqui só sai o nome interno do plano (o mesmo `nome` do
+// PlanoConfig, não o de exibição) e o token do lead, quando existe.
+function buildWhatsappUrl(planoNome: string, leadToken: string | null): string {
+  const params = new URLSearchParams({ plano: planoNome });
+  if (leadToken) params.set("lead", leadToken);
+  return `${WHATSAPP_PLANOS_URL}?${params.toString()}`;
+}
+
+// Conteúdo editável da landing (hero, banner de promoção, FAQ) — mesmo
+// padrão do plano: busca ao vivo do admin real, nunca hardcoded aqui.
+// Ausência de dado (API fora, ainda não configurado) cai pro texto atual
+// como fallback — diferente de preço, texto de marketing desatualizado
+// por alguns minutos não tem o mesmo risco de "prometeu e não cobrou
+// isso", então aqui vale manter a página de pé com o último bom texto
+// conhecido em vez de mostrar estado de erro.
+export type LandingConteudo = {
+  hero: { titulo: string; tituloDestaque: string; subtitulo: string } | null;
+  banner: { texto: string; url: string } | null;
+  faq: { pergunta: string; resposta: string }[] | null;
+};
+
+const LANDING_CONTEUDO_API_URL = "https://app.licitacaoapp.com.br/api/landing-conteudo-publico";
+
+async function fetchLandingConteudo(): Promise<LandingConteudo> {
+  try {
+    const res = await fetch(LANDING_CONTEUDO_API_URL, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return { hero: null, banner: null, faq: null };
+    const data: unknown = await res.json();
+    if (typeof data !== "object" || data === null) {
+      return { hero: null, banner: null, faq: null };
+    }
+    const d = data as Partial<LandingConteudo>;
+    return {
+      hero: d.hero ?? null,
+      banner: d.banner ?? null,
+      faq: Array.isArray(d.faq) ? d.faq : null,
+    };
+  } catch {
+    return { hero: null, banner: null, faq: null };
+  }
+}
+
+// Dado real de plano, buscado do PlanoConfig do app de verdade — nunca mais
+// hardcoded aqui. Preço muda no painel de precificação do Dayvid, sem
+// deploy nesta landing.
+export type PlanoPublico = {
+  nome: string;
+  nomeExibicao: string;
+  preco: number;
+  descricao: string;
+  beneficios: string[];
+  destaque: boolean;
+  // Texto real do selo, vindo do admin — "Mais popular" é só o fallback
+  // pra continuar funcionando se o backend ainda não mandar este campo.
+  destaqueLabel?: string | null;
+  ordemExibicao: number;
+};
+
+const PLANOS_API_URL = "https://app.licitacaoapp.com.br/api/planos-publico";
+
+// Roda no servidor (loader do TanStack Start), então o preço já vem certo
+// no HTML entregue — sem flash de loading, bom pra SEO. Nunca lança: se a
+// API cair, a página continua no ar com fallback explícito, nunca com
+// número inventado.
+async function fetchPlanosPublico(): Promise<PlanoPublico[] | null> {
+  try {
+    const res = await fetch(PLANOS_API_URL, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    if (
+      typeof data !== "object" ||
+      data === null ||
+      !Array.isArray((data as { planos?: unknown }).planos)
+    ) {
+      return null;
+    }
+    return (data as { planos: PlanoPublico[] }).planos.sort(
+      (a, b) => a.ordemExibicao - b.ordemExibicao
+    );
+  } catch {
+    return null;
+  }
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -75,35 +196,57 @@ export const Route = createFileRoute("/")({
           description:
             "Plataforma SaaS para encontrar, analisar e vencer licitações públicas no Brasil.",
           offers: [
+            { "@type": "Offer", name: "Grátis", price: "0", priceCurrency: "BRL" },
             { "@type": "Offer", name: "Essencial", price: "197", priceCurrency: "BRL" },
-            { "@type": "Offer", name: "Estratégico", price: "397", priceCurrency: "BRL" },
-            { "@type": "Offer", name: "Profissional", price: "797", priceCurrency: "BRL" },
+            { "@type": "Offer", name: "Inteligência", price: "397", priceCurrency: "BRL" },
+            { "@type": "Offer", name: "Estratégico", price: "997", priceCurrency: "BRL" },
           ],
         }),
       },
     ],
   }),
   component: Index,
+  loader: async () => {
+    const [planos, conteudo] = await Promise.all([
+      fetchPlanosPublico(),
+      fetchLandingConteudo(),
+    ]);
+    return { planos, conteudo };
+  },
 });
 
 function Index() {
+  const { planos, conteudo } = Route.useLoaderData();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
+      {conteudo.banner && <PromoBanner texto={conteudo.banner.texto} url={conteudo.banner.url} />}
       <main>
-        <Hero />
+        <Hero hero={conteudo.hero} />
         <Problem />
         <Solution />
         <HowItWorks />
         <DashboardSection />
         <Differentials />
         <Authority />
-        <Pricing />
-        <FAQSection />
+        <Pricing planos={planos} />
+        <FAQSection faq={conteudo.faq} />
         <FinalCTA />
       </main>
       <Footer />
     </div>
+  );
+}
+
+/* ---------------- PROMO BANNER ---------------- */
+function PromoBanner({ texto, url }: { texto: string; url: string }) {
+  return (
+    <a
+      href={url}
+      className="block bg-[var(--gradient-brand)] text-brand-foreground text-center text-sm font-semibold py-2.5 px-4 hover:opacity-95 transition"
+    >
+      {texto} <ArrowRight className="inline h-3.5 w-3.5 ml-1" />
+    </a>
   );
 }
 
@@ -190,7 +333,12 @@ function Nav() {
 }
 
 /* ---------------- HERO ---------------- */
-function Hero() {
+function Hero({ hero }: { hero: { titulo: string; tituloDestaque: string; subtitulo: string } | null }) {
+  const titulo = hero?.titulo ?? "Pare de perder";
+  const tituloDestaque = hero?.tituloDestaque ?? "licitações no escuro.";
+  const subtitulo =
+    hero?.subtitulo ??
+    "O Licitação App encontra oportunidades compatíveis com sua empresa, analisa a concorrência, mostra suas chances reais e ajuda você a vender para o governo com mais segurança.";
   return (
     <section className="relative overflow-hidden">
       <div
@@ -207,16 +355,14 @@ function Hero() {
               <span>Baseado em mais de 20 anos de experiência em licitações públicas</span>
             </div>
             <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-primary leading-[1.05]">
-              Pare de perder
+              {titulo}
               <br />
               <span className="bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent">
-                licitações no escuro.
+                {tituloDestaque}
               </span>
             </h1>
             <p className="mt-5 text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-              O Licitação App encontra oportunidades compatíveis com sua empresa, analisa a
-              concorrência, mostra suas chances reais e ajuda você a vender para o governo com
-              mais segurança.
+              {subtitulo}
             </p>
             <div className="mt-7 flex flex-col sm:flex-row flex-wrap gap-3">
               <a
@@ -667,6 +813,22 @@ function PlatformMockup() {
                 </div>
               </div>
 
+              {/* Motor de Conformidade */}
+              <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-sm font-bold text-primary">Motor de Conformidade</h4>
+                  <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md bg-success/10 text-success">
+                    <ShieldCheck className="h-3 w-3" /> Fundamentado
+                  </span>
+                </div>
+                <div className="mt-3 rounded-lg bg-secondary/50 border border-border p-2.5 text-[11px] text-muted-foreground font-mono leading-snug">
+                  "...observado o disposto no art. 34, quando o julgamento for por menor preço..."
+                </div>
+                <p className="mt-2.5 text-[11px] text-foreground leading-relaxed">
+                  Toda sugestão vem com o trecho literal do edital ou da lei que a sustenta — nunca uma afirmação sem fonte citável.
+                </p>
+              </div>
+
               {/* Alertas */}
               <div className="lg:col-span-2 rounded-xl border border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center justify-between">
@@ -789,8 +951,7 @@ function Authority() {
               </p>
               <div className="mt-6 flex flex-wrap gap-x-6 gap-y-4 text-sm">
                 <Stat n="20+" label="anos de experiência" />
-                <Stat n="10+" label="anos como pregoeiro" />
-                <Stat n="R$ 1B+" label="em contratos analisados" />
+                <Stat n="12+" label="anos como pregoeiro" />
               </div>
             </div>
           </div>
@@ -809,33 +970,9 @@ function Stat({ n, label }: { n: string; label: string }) {
 }
 
 /* ---------------- PRICING ---------------- */
-function Pricing() {
-  const plans = [
-    {
-      name: "Essencial",
-      price: "197",
-      desc: "Para começar a participar de licitações com método.",
-      features: ["Radar de oportunidades", "Academia de licitações", "Gestão documental", "Análise básica de editais"],
-      cta: "Começar agora",
-      featured: false,
-    },
-    {
-      name: "Estratégico",
-      price: "397",
-      desc: "Para empresas que querem ganhar mais vezes.",
-      features: ["Tudo do Essencial", "Inteligência de concorrência", "Análise completa de editais", "Alertas prioritários"],
-      cta: "Começar agora",
-      featured: true,
-    },
-    {
-      name: "Profissional",
-      price: "797",
-      desc: "Acompanhamento de alta performance.",
-      features: ["Tudo do Estratégico", "Suporte durante pregões", "Recursos e contrarrazões", "Consultoria mensal"],
-      cta: "Começar agora",
-      featured: false,
-    },
-  ];
+function Pricing({ planos }: { planos: PlanoPublico[] | null }) {
+  const leadToken = useLeadToken();
+
   return (
     <section id="planos" className="py-16 sm:py-24 border-t border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -846,68 +983,97 @@ function Pricing() {
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground">Sem fidelidade. Cancele quando quiser.</p>
         </div>
-        <div className="mt-12 sm:mt-14 grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {plans.map((p) => (
-            <div
-              key={p.name}
-              className={`relative rounded-2xl border p-6 sm:p-8 flex flex-col ${
-                p.featured
-                  ? "border-brand bg-primary text-primary-foreground shadow-[var(--shadow-elegant)] md:scale-105"
-                  : "border-border bg-card"
-              }`}
-            >
-              {p.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-success px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                  <Star className="h-3 w-3 fill-current" /> Mais popular
-                </span>
-              )}
-              <h3 className={`text-lg font-bold ${p.featured ? "text-white" : "text-primary"}`}>{p.name}</h3>
-              <p className={`mt-1 text-sm ${p.featured ? "text-white/70" : "text-muted-foreground"}`}>{p.desc}</p>
-              <div className="mt-6 flex items-baseline gap-1">
-                <span className={`text-sm font-medium ${p.featured ? "text-white/70" : "text-muted-foreground"}`}>R$</span>
-                <span className={`text-5xl font-extrabold ${p.featured ? "text-white" : "text-primary"}`}>{p.price}</span>
-                <span className={`text-sm ${p.featured ? "text-white/70" : "text-muted-foreground"}`}>/mês</span>
-              </div>
-              <ul className="mt-8 space-y-3 flex-1">
-                {p.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <Check className={`h-4 w-4 mt-0.5 shrink-0 ${p.featured ? "text-success" : "text-success"}`} />
-                    <span className={p.featured ? "text-white/90" : "text-foreground"}>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="#cta"
-                className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition ${
-                  p.featured
-                    ? "bg-success text-white hover:bg-success/90"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+
+        {!planos || planos.length === 0 ? (
+          // Nunca mostrar preço inventado se a API não respondeu — melhor
+          // um estado honesto do que um número que pode estar errado.
+          <div className="mt-12 sm:mt-14 max-w-xl mx-auto text-center rounded-2xl border border-border bg-card p-8">
+            <p className="text-base text-foreground font-medium">
+              Não conseguimos carregar os planos agora.
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tente atualizar a página em instantes, ou fale com a gente
+              diretamente.
+            </p>
+          </div>
+        ) : (
+          <div
+            className={`mt-12 sm:mt-14 grid sm:grid-cols-2 gap-5 max-w-7xl mx-auto ${
+              planos.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"
+            }`}
+          >
+            {planos.map((p) => (
+              <div
+                key={p.nome}
+                className={`relative rounded-2xl border p-6 sm:p-7 flex flex-col ${
+                  p.destaque
+                    ? "border-brand bg-primary text-primary-foreground shadow-[var(--shadow-elegant)] lg:scale-105"
+                    : "border-border bg-card"
                 }`}
               >
-                {p.cta} <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-          ))}
-        </div>
+                {p.destaque && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full bg-success px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                    <Star className="h-3 w-3 fill-current" /> {p.destaqueLabel || "Mais popular"}
+                  </span>
+                )}
+                <h3 className={`text-lg font-bold ${p.destaque ? "text-white" : "text-primary"}`}>{p.nomeExibicao}</h3>
+                <p className={`mt-1 text-sm ${p.destaque ? "text-white/70" : "text-muted-foreground"}`}>{p.descricao}</p>
+                <div className="mt-6 flex items-baseline gap-1">
+                  {p.preco === 0 ? (
+                    <span className={`text-5xl font-extrabold ${p.destaque ? "text-white" : "text-primary"}`}>Grátis</span>
+                  ) : (
+                    <>
+                      <span className={`text-sm font-medium ${p.destaque ? "text-white/70" : "text-muted-foreground"}`}>R$</span>
+                      <span className={`text-5xl font-extrabold ${p.destaque ? "text-white" : "text-primary"}`}>
+                        {p.preco.toLocaleString("pt-BR")}
+                      </span>
+                      <span className={`text-sm ${p.destaque ? "text-white/70" : "text-muted-foreground"}`}>/mês</span>
+                    </>
+                  )}
+                </div>
+                <ul className="mt-8 space-y-3 flex-1">
+                  {p.beneficios.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <Check className={`h-4 w-4 mt-0.5 shrink-0 ${p.destaque ? "text-success" : "text-success"}`} />
+                      <span className={p.destaque ? "text-white/90" : "text-foreground"}>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href={p.preco === 0 ? buildCadastroUrl(leadToken) : buildWhatsappUrl(p.nome, leadToken)}
+                  className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition ${
+                    p.destaque
+                      ? "bg-success text-white hover:bg-success/90"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
+                >
+                  {p.preco === 0 ? "Começar grátis" : "Começar agora"} <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
 /* ---------------- FAQ ---------------- */
-function FAQSection() {
-  const faqs = [
-    { q: "Preciso ter experiência prévia em licitações?", a: "Não. O Licitação App foi feito justamente para empresas que estão começando agora. Você recebe oportunidades já filtradas e tem acesso à nossa academia com aulas passo a passo." },
-    { q: "Funciona para MEI?", a: "Sim. MEIs, microempresas e empresas de pequeno porte são o público que mais se beneficia de licitações públicas, graças a benefícios legais como empate ficto e exclusividade em itens até R$ 80 mil." },
-    { q: "O sistema garante que eu vou vencer licitações?", a: "Não existe garantia de vitória em licitação — quem prometer isso está sendo desonesto. O que garantimos é que você vai disputar com inteligência: oportunidades certas, preços competitivos e documentação em dia." },
-    { q: "Como recebo os alertas de oportunidade?", a: "Por e-mail, WhatsApp e dentro da própria plataforma. Você define a frequência e o nível de prioridade que quer receber." },
-    { q: "Posso cancelar quando quiser?", a: "Sim. Não há fidelidade, multa ou taxas escondidas. Cancela direto no painel, em 2 cliques." },
-    { q: "De onde vêm os dados de licitações?", a: "Monitoramos diariamente portais oficiais — ComprasNet, BEC, Licitações-e, BLL, BNC e portais municipais e estaduais — consolidando tudo em uma única plataforma." },
-    { q: "Vocês ajudam com a parte burocrática (certidões, documentos)?", a: "Sim. O módulo de Gestão Documental controla validades e alerta antes do vencimento. Nos planos Estratégico e Profissional, oferecemos suporte direto na elaboração." },
-    { q: "Funciona para qualquer ramo de atividade?", a: "Sim. Atendemos fornecedores de alimentação, limpeza, informática, manutenção, logística, materiais, serviços para iFood e dezenas de outros segmentos." },
-    { q: "Os planos têm reajuste automático?", a: "O valor que você contratar permanece o mesmo enquanto a assinatura estiver ativa, com até 12 meses de proteção contra reajustes." },
-    { q: "Como funciona o suporte durante pregões (plano Profissional)?", a: "Você tem acesso a um especialista por chat ao vivo no horário do pregão, para tirar dúvidas estratégicas em tempo real e revisar lances." },
-  ];
+const FAQ_PADRAO = [
+  { q: "Preciso ter experiência prévia em licitações?", a: "Não. O Licitação App foi feito justamente para empresas que estão começando agora. Você recebe oportunidades já filtradas e tem acesso à nossa academia com aulas passo a passo." },
+  { q: "Funciona para MEI?", a: "Sim. MEIs, microempresas e empresas de pequeno porte são o público que mais se beneficia de licitações públicas, graças a benefícios legais como empate ficto e exclusividade em itens até R$ 80 mil." },
+  { q: "O sistema garante que eu vou vencer licitações?", a: "Não existe garantia de vitória em licitação — quem prometer isso está sendo desonesto. O que garantimos é que você vai disputar com inteligência: oportunidades certas, preços competitivos e documentação em dia." },
+  { q: "Como recebo os alertas de oportunidade?", a: "Por e-mail, WhatsApp e dentro da própria plataforma. Você define a frequência e o nível de prioridade que quer receber." },
+  { q: "Posso cancelar quando quiser?", a: "Sim. Não há fidelidade, multa ou taxas escondidas. Cancela direto no painel, em 2 cliques." },
+  { q: "De onde vêm os dados de licitações?", a: "Monitoramos diariamente portais oficiais — ComprasNet, BEC, Licitações-e, BLL, BNC e portais municipais e estaduais — consolidando tudo em uma única plataforma." },
+  { q: "Vocês ajudam com a parte burocrática (certidões, documentos)?", a: "Sim. O módulo de Gestão Documental controla validades e alerta antes do vencimento. Nos planos Inteligência e Estratégico, oferecemos suporte direto na elaboração." },
+  { q: "Funciona para qualquer ramo de atividade?", a: "Sim. Atendemos fornecedores de alimentação, limpeza, informática, manutenção, logística, materiais, serviços para iFood e dezenas de outros segmentos." },
+  { q: "Os planos têm reajuste automático?", a: "O valor que você contratar permanece o mesmo enquanto a assinatura estiver ativa, com até 12 meses de proteção contra reajustes." },
+  { q: "Como funciona a consultoria mensal (plano Estratégico)?", a: "Você tem acesso a um especialista por chat para tirar dúvidas estratégicas sobre suas licitações em andamento e revisar pontos críticos antes do pregão." },
+];
+
+function FAQSection({ faq }: { faq: { pergunta: string; resposta: string }[] | null }) {
+  const faqs = faq && faq.length > 0 ? faq.map((f) => ({ q: f.pergunta, a: f.resposta })) : FAQ_PADRAO;
   return (
     <section id="faq" className="py-16 sm:py-24 border-t border-border bg-secondary/30">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
@@ -938,6 +1104,7 @@ function FAQSection() {
 
 /* ---------------- FINAL CTA ---------------- */
 function FinalCTA() {
+  const leadToken = useLeadToken();
   return (
     <section id="cta" className="py-20 sm:py-28 bg-primary text-primary-foreground relative overflow-hidden">
       <div className="absolute inset-0 opacity-30" style={{ background: "radial-gradient(circle at 50% 50%, oklch(0.55 0.21 263 / 0.35), transparent 60%)" }} aria-hidden />
@@ -954,7 +1121,7 @@ function FinalCTA() {
         </p>
         <div className="mt-8 sm:mt-10">
           <a
-            href="#planos"
+            href={buildCadastroUrl(leadToken)}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-success px-6 sm:px-10 py-4 sm:py-5 text-sm sm:text-base md:text-lg font-bold text-white hover:bg-success/90 transition shadow-[0_20px_60px_-15px_oklch(0.72_0.17_150/0.5)] hover:scale-[1.02] active:scale-100 duration-200 w-full sm:w-auto"
           >
             QUERO COMEÇAR AGORA <ArrowRight className="h-5 w-5" />
