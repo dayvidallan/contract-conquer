@@ -1,0 +1,107 @@
+name: Deploy landing (Cloudflare Workers)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Deploys da mesma branch não podem correr em paralelo, mas também não
+# cancelamos um deploy já em andamento — abortar no meio do `wrangler deploy`
+# é pior que esperar o anterior terminar.
+concurrency:
+  group: deploy-cloudflare-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Pegou o `buildWhatsappUrl` indefinido que teria ido pra produção.
+      # Barato e vale a pena. Lint fica de fora de propósito: o repo tem ~84
+      # erros de formatação pré-existentes e um `eslint .` aqui reprovaria
+      # todo deploy por motivo alheio à mudança.
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # Gera .output/server/wrangler.json (nome do worker, assets, compat
+      # flags) e o .wrangler/deploy/config.json que aponta pra ele.
+      - name: Build
+        run: npm run build
+
+      # Sem --config: o wrangler sobe a árvore de diretórios procurando
+      # .wrangler/deploy/config.json e segue o `configPath` de lá pro
+      # wrangler.json que o build acabou de gerar.
+      - name: Deploy
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      # A verificação que importa é contra a URL publicada de verdade, não
+      # contra nada rodando dentro do runner. A URL vem do output da própria
+      # action, então não precisamos saber o subdomínio da conta.
+      - name: Verificar a URL publicada
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          set -uo pipefail
+
+          if [ -z "${DEPLOY_URL}" ]; then
+            echo "::error::A action não devolveu deployment-url — deploy não confirmado."
+            exit 1
+          fi
+
+          echo "Verificando ${DEPLOY_URL}"
+
+          # Propagação leva alguns segundos; tentamos algumas vezes antes de
+          # considerar o deploy quebrado.
+          for tentativa in $(seq 1 10); do
+            # Apagado a cada volta: se o curl não conseguir conectar ele não
+            # reescreve o arquivo, e sem isso a checagem leria o corpo da
+            # tentativa anterior.
+            rm -f /tmp/deploy-check.html
+
+            # O próprio -w já imprime 000 quando a conexão falha; o `|| true`
+            # é só pra falha do curl não derrubar o step antes da hora.
+            codigo=$(curl -sS -o /tmp/deploy-check.html -w '%{http_code}' \
+              --max-time 20 "${DEPLOY_URL}") || true
+            codigo=${codigo:-000}
+
+            # Marcador ASCII do JSON-LD: prova que o SSR rodou e montou o
+            # <head>, sem depender de acento sobreviver ao locale do runner.
+            # Não checamos `offers` de propósito — ela some quando a API de
+            # planos está fora, que é comportamento correto e não uma falha
+            # deste deploy.
+            if [ "${codigo}" = "200" ] && \
+               grep -q '"@type":"SoftwareApplication"' /tmp/deploy-check.html; then
+              echo "OK — HTTP 200 e SSR renderizado (tentativa ${tentativa})."
+              echo "### Deploy verificado: ${DEPLOY_URL}" >> "${GITHUB_STEP_SUMMARY}"
+              exit 0
+            fi
+
+            echo "tentativa ${tentativa}: HTTP ${codigo} — repetindo em 6s"
+            sleep 6
+          done
+
+          echo "::error::${DEPLOY_URL} não respondeu 200 com HTML renderizado."
+          if [ -s /tmp/deploy-check.html ]; then
+            echo "--- primeiros 800 bytes do corpo recebido ---"
+            head -c 800 /tmp/deploy-check.html
+            echo
+          else
+            echo "(nenhum corpo recebido — não chegou a conectar)"
+          fi
+          exit 1
