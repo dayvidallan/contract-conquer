@@ -16,7 +16,6 @@ import {
   Star,
   Award,
   Zap,
-  BookOpen,
   Headphones,
   Database,
   ChevronDown,
@@ -962,8 +961,13 @@ function Differentials() {
     { icon: Database, text: "Banco de dados próprio" },
     { icon: TrendingUp, text: "Inteligência de concorrência" },
     { icon: FileSearch, text: "Análise automática dos editais" },
-    { icon: BookOpen, text: "Curso completo de licitações" },
-    { icon: ShieldCheck, text: "Certificados digitais" },
+    // 🚨 Aqui moravam "Curso completo de licitações" e "Certificados digitais",
+    // removidos em 01/09/2026: /academia no app renderiza "Não implementado"
+    // (é v2), e nao existe NADA de certificado digital no codigo - nem ICP,
+    // nem e-CNPJ, nem A1/A3. Estes 2 substitutos sao features reais, e o texto
+    // e' o do proprio PlanoConfig, nao copy nova.
+    { icon: ShieldCheck, text: "Checklist automático por edital" },
+    { icon: FileText, text: "Geração de documentos e recursos" },
     { icon: Zap, text: "Alertas inteligentes" },
     { icon: Headphones, text: "Suporte especializado" },
     { icon: Award, text: "Experiência real de mercado" },
@@ -1141,7 +1145,7 @@ function Pricing({ planos }: { planos: PlanoPublico[] | null }) {
 // entrada, conferir a afirmacao contra o codigo do app - nao contra a
 // intencao de produto, nao contra o que o card de plano anuncia.
 const FAQ_PADRAO = [
-  { q: "Preciso ter experiência prévia em licitações?", a: "Não. O Licitação App foi feito justamente para empresas que estão começando agora. Você recebe oportunidades já filtradas e tem acesso à nossa academia com aulas passo a passo." },
+  { q: "Preciso ter experiência prévia em licitações?", a: "Não. O Licitação App foi feito justamente para quem está começando. As oportunidades chegam já filtradas pelo perfil da sua empresa, com uma nota de viabilidade e a lista de documentos que aquele edital exige — você não precisa saber ler edital para decidir se vale a pena disputar." },
   { q: "Funciona para MEI?", a: "Sim. MEIs, microempresas e empresas de pequeno porte são o público que mais se beneficia de licitações públicas, graças a benefícios legais como empate ficto e exclusividade em itens até R$ 80 mil." },
   { q: "O sistema garante que eu vou vencer licitações?", a: "Não existe garantia de vitória em licitação — quem prometer isso está sendo desonesto. O que garantimos é que você vai disputar com inteligência: oportunidades certas, preços competitivos e documentação em dia." },
   { q: "Como recebo os alertas de oportunidade?", a: "Por e-mail, assim que encontramos uma oportunidade compatível com o seu perfil — um aviso por oportunidade, no mesmo ciclo em que ela entra na plataforma. Tudo também fica no seu painel, com o histórico. Você escolhe para qual e-mail os avisos devem ir." },
