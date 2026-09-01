@@ -86,6 +86,29 @@ function buildWhatsappUrl(planoNome: string, leadToken: string | null): string {
 // por alguns minutos não tem o mesmo risco de "prometeu e não cobrou
 // isso", então aqui vale manter a página de pé com o último bom texto
 // conhecido em vez de mostrar estado de erro.
+// 🚨 O degrade desta landing e' MUDO por construcao: se a API de conteudo cair,
+// a pagina continua de pe com o texto embutido e ninguem fica sabendo. Foi
+// assim que FAQ_PADRAO passou meses com 3 respostas que o produto nao sustenta
+// (01/09/2026) - o defeito nunca apareceu porque o fallback nunca se anunciou.
+//
+// Isto nao e' alerta, e' rastro: sai no painel de Logs do Worker (Cloudflare),
+// uma linha JSON por degrade. O objetivo e' que "a landing esta servindo o
+// texto embutido agora" deixe de ser um fato que nao existe em lugar nenhum.
+//
+// console.warn e nao console.error de proposito: a pagina NAO esta quebrada,
+// ela esta servindo conteudo velho - misturar com erro real tira o valor do
+// filtro de erro.
+function registrarFallback(area: "hero" | "faq" | "planos", motivo: string): void {
+  console.warn(
+    JSON.stringify({
+      evento: "landing_fallback",
+      area,
+      motivo,
+      em: new Date().toISOString(),
+    }),
+  );
+}
+
 export type LandingConteudo = {
   hero: { titulo: string; tituloDestaque: string; subtitulo: string } | null;
   banner: { texto: string; url: string } | null;
@@ -94,24 +117,40 @@ export type LandingConteudo = {
 
 const LANDING_CONTEUDO_API_URL = "https://app.licitacaoapp.com.br/api/landing-conteudo-publico";
 
+// Cada motivo e' distinto de proposito: "a API respondeu 500" e "o admin
+// desativou todas as FAQs" produzem a MESMA tela, e sao problemas de dono
+// diferente. Um log que nao separa os dois nao serve pra agir.
+function conteudoIndisponivel(motivo: string): LandingConteudo {
+  registrarFallback("hero", motivo);
+  registrarFallback("faq", motivo);
+  return { hero: null, banner: null, faq: null };
+}
+
 async function fetchLandingConteudo(): Promise<LandingConteudo> {
   try {
     const res = await fetch(LANDING_CONTEUDO_API_URL, {
       headers: { Accept: "application/json" },
     });
-    if (!res.ok) return { hero: null, banner: null, faq: null };
+    if (!res.ok) return conteudoIndisponivel(`http_${res.status}`);
     const data: unknown = await res.json();
     if (typeof data !== "object" || data === null) {
-      return { hero: null, banner: null, faq: null };
+      return conteudoIndisponivel("payload_nao_e_objeto");
     }
     const d = data as Partial<LandingConteudo>;
-    return {
-      hero: d.hero ?? null,
-      banner: d.banner ?? null,
-      faq: Array.isArray(d.faq) ? d.faq : null,
-    };
-  } catch {
-    return { hero: null, banner: null, faq: null };
+    const faq = Array.isArray(d.faq) ? d.faq : null;
+
+    // Degrade PARCIAL: a resposta chegou, mas veio sem uma das partes. Sem
+    // estas duas linhas o caso mais provavel de todos - FAQ vazia no admin -
+    // seria justamente o unico que nao deixaria rastro.
+    if (!d.hero) registrarFallback("hero", "ausente_na_resposta");
+    if (faq === null) registrarFallback("faq", "ausente_ou_formato_invalido");
+    else if (faq.length === 0) registrarFallback("faq", "lista_vazia");
+
+    return { hero: d.hero ?? null, banner: d.banner ?? null, faq };
+  } catch (erro) {
+    return conteudoIndisponivel(
+      `excecao_${erro instanceof Error ? erro.name : "desconhecida"}`,
+    );
   }
 }
 
@@ -137,24 +176,39 @@ const PLANOS_API_URL = "https://app.licitacaoapp.com.br/api/planos-publico";
 // no HTML entregue — sem flash de loading, bom pra SEO. Nunca lança: se a
 // API cair, a página continua no ar com fallback explícito, nunca com
 // número inventado.
+// Este degrade e' visivel ao VISITANTE (a Pricing mostra "nao conseguimos
+// carregar os planos agora") e invisivel a NOS - que e' metade do problema.
+// Mesmo rastro do conteudo, pelo mesmo motivo.
 async function fetchPlanosPublico(): Promise<PlanoPublico[] | null> {
   try {
     const res = await fetch(PLANOS_API_URL, {
       headers: { Accept: "application/json" },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      registrarFallback("planos", `http_${res.status}`);
+      return null;
+    }
     const data: unknown = await res.json();
     if (
       typeof data !== "object" ||
       data === null ||
       !Array.isArray((data as { planos?: unknown }).planos)
     ) {
+      registrarFallback("planos", "payload_sem_lista_de_planos");
       return null;
     }
-    return (data as { planos: PlanoPublico[] }).planos.sort(
+    const planos = (data as { planos: PlanoPublico[] }).planos.sort(
       (a, b) => a.ordemExibicao - b.ordemExibicao
     );
-  } catch {
+    // Lista vazia responde 200 e passa por toda a validacao acima - a secao de
+    // planos some da pagina sem nada ter "falhado".
+    if (planos.length === 0) registrarFallback("planos", "lista_vazia");
+    return planos;
+  } catch (erro) {
+    registrarFallback(
+      "planos",
+      `excecao_${erro instanceof Error ? erro.name : "desconhecida"}`,
+    );
     return null;
   }
 }
@@ -1072,16 +1126,30 @@ function Pricing({ planos }: { planos: PlanoPublico[] | null }) {
 }
 
 /* ---------------- FAQ ---------------- */
+// 🚨 ESTE BLOCO NAO E' RASCUNHO: ele vai AO AR sozinho sempre que
+// /api/landing-conteudo-publico falhar ou devolver a lista vazia (todas as
+// FAQs desativadas em /admin/landing). Nao ha deploy no meio, e ate 01/09/2026
+// nao havia sinal nenhum de que tinha disparado.
+//
+// Ele ficou meses afirmando 3 coisas que o produto NAO faz - monitorar
+// ComprasNet/BEC/Licitacoes-e/BLL/BNC, alertar por WhatsApp com frequencia
+// configuravel, e dar "ate 12 meses de protecao contra reajuste". Corrigido
+// em 01/09/2026, conferido contra o codigo do app (lib/pncp.ts,
+// lib/opportunity-notifications.ts, lib/portal-resolver.ts).
+//
+// ⚠️ REGRA: resposta aqui e' PROMESSA PUBLICA. Antes de editar qualquer
+// entrada, conferir a afirmacao contra o codigo do app - nao contra a
+// intencao de produto, nao contra o que o card de plano anuncia.
 const FAQ_PADRAO = [
   { q: "Preciso ter experiência prévia em licitações?", a: "Não. O Licitação App foi feito justamente para empresas que estão começando agora. Você recebe oportunidades já filtradas e tem acesso à nossa academia com aulas passo a passo." },
   { q: "Funciona para MEI?", a: "Sim. MEIs, microempresas e empresas de pequeno porte são o público que mais se beneficia de licitações públicas, graças a benefícios legais como empate ficto e exclusividade em itens até R$ 80 mil." },
   { q: "O sistema garante que eu vou vencer licitações?", a: "Não existe garantia de vitória em licitação — quem prometer isso está sendo desonesto. O que garantimos é que você vai disputar com inteligência: oportunidades certas, preços competitivos e documentação em dia." },
-  { q: "Como recebo os alertas de oportunidade?", a: "Por e-mail, WhatsApp e dentro da própria plataforma. Você define a frequência e o nível de prioridade que quer receber." },
+  { q: "Como recebo os alertas de oportunidade?", a: "Por e-mail, assim que encontramos uma oportunidade compatível com o seu perfil — um aviso por oportunidade, no mesmo ciclo em que ela entra na plataforma. Tudo também fica no seu painel, com o histórico. Você escolhe para qual e-mail os avisos devem ir." },
   { q: "Posso cancelar quando quiser?", a: "Sim. Não há fidelidade, multa ou taxas escondidas. Cancela direto no painel, em 2 cliques." },
-  { q: "De onde vêm os dados de licitações?", a: "Monitoramos diariamente portais oficiais — ComprasNet, BEC, Licitações-e, BLL, BNC e portais municipais e estaduais — consolidando tudo em uma única plataforma." },
+  { q: "De onde vêm os dados de licitações?", a: "Do PNCP, o Portal Nacional de Contratações Públicas — o portal oficial onde órgãos federais, estaduais e municipais publicam suas licitações. Monitoramos o PNCP diariamente e cruzamos cada publicação com o perfil da sua empresa. Quando a disputa acontece em outro portal, o edital informa qual é, e nós levamos você direto para o endereço certo." },
   { q: "Vocês ajudam com a parte burocrática (certidões, documentos)?", a: "Sim. O módulo de Gestão Documental controla validades e alerta antes do vencimento. Nos planos Inteligência e Estratégico, oferecemos suporte direto na elaboração." },
   { q: "Funciona para qualquer ramo de atividade?", a: "Sim. Atendemos fornecedores de alimentação, limpeza, informática, manutenção, logística, materiais, serviços para iFood e dezenas de outros segmentos." },
-  { q: "Os planos têm reajuste automático?", a: "O valor que você contratar permanece o mesmo enquanto a assinatura estiver ativa, com até 12 meses de proteção contra reajustes." },
+  { q: "Os planos têm reajuste automático?", a: "Não. Não existe reajuste por índice nem correção automática: o preço que aparece aqui é o mesmo que o checkout cobra, e qualquer mudança de valor é uma decisão nossa, feita manualmente. Sem fidelidade — se um dia o preço mudar e não fizer sentido para você, é só cancelar." },
   { q: "Como funciona a consultoria mensal (plano Estratégico)?", a: "Você tem acesso a um especialista por chat para tirar dúvidas estratégicas sobre suas licitações em andamento e revisar pontos críticos antes do pregão." },
 ];
 
